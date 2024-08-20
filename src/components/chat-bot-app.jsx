@@ -1,7 +1,8 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
 import './chat-bot-app.css'
 
-const ChatBotApp = () => {
+const ChatBotApp = ({onGoBack}) => {
 
     return (
         <div className="chat-app">
@@ -27,12 +28,13 @@ const ChatBotApp = () => {
             <div className="chat-window">
                 <div className="chat-title">
                     <h3>Chat with AI</h3>
-                    <i className="bx bx-arrow-back arrow"></i>
+                    <i className="bx bx-arrow-back arrow"
+                    onClick={onGoBack}></i>
                 </div>
                 <div className="chat">
                     <div className="prompt">Hi, how are you?
                         <span>12:59:51 PM</span></div>
-                    <div className="response">Hellow I am an AI ChatBot! I have no feelings, How can I help you today?
+                    <div className="response">Hello I am an AI ChatBot! I have no feelings, How can I help you today?
                         <span>12:59:52 PM</span></div>
                     <div className="typing">Typing...</div>
                 </div>
