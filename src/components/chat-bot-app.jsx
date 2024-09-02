@@ -1,8 +1,11 @@
 /* eslint-disable react/prop-types */
-import React from 'react';
+import React, {useState} from 'react';
 import './chat-bot-app.css'
 
-const ChatBotApp = ({onGoBack}) => {
+const ChatBotApp = ({onGoBack, chats, setChats}) => {
+
+    const [inputValue, setInputValue] = useState('');
+    const [messages, setMessages] = useState(chats[0]?.messages || []);
 
     return (
         <div className="chat-app">
