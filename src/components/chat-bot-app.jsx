@@ -1,51 +1,134 @@
 /* eslint-disable react/prop-types */
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import './chat-bot-app.css'
 
-const ChatBotApp = ({onGoBack, chats, setChats}) => {
+const ChatBotApp = ({ onGoBack, chats, setChats, activeChat, setActiveChat, onNewChat }) => {
 
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState(chats[0]?.messages || []);
+
+    useEffect(()=> {
+        const activeChatObject = chats.find((chat)=> chat.id===activeChat);
+        setMessages(activeChatObject ?activeChatObject.messages: []);
+    }, [activeChat, chats]);
+
+    const handleInputChange = (e) => {
+        setInputValue(e.target.value);
+    }
+
+    const sendMessage = () => {
+        //prevents sending of empty string
+        if (inputValue.trim === '') return;
+
+        const newMessage = {
+            type: "prompt",
+            text: inputValue,
+            timeStamp: new Date().toLocaleTimeString(),
+        }
+
+        const updatedMessages = [...messages, newMessage];
+        setMessages(updatedMessages);
+        setInputValue('');
+
+
+        const updatedChats = chats.map((chat) => {
+            if (chat.id===activeChat) {
+                return { ...chat, messages: updatedMessages }
+            }
+            return chat;
+        })
+
+        setChats(updatedChats);
+    }
+
+    const handleKeyDown = (e) => {
+        if(e.key === "Enter") {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+
+    const handleSelectChat = (id) => {
+        setActiveChat(id);
+    }
+
+    const handleDeleteChat = (id) => {
+        const updatedChats = chats.filter((chat)=> chat.id !== id);
+        setChats(updatedChats);
+
+        if (id === activeChat){
+            const newActiveChat = updatedChats.length>0 ? updatedChats[0].id: null;
+            setActiveChat(newActiveChat);
+        }
+    }
 
     return (
         <div className="chat-app">
             <div className="chat-list">
                 <div className="chat-list-header">
                     <h2>Chat List</h2>
-                    <i className="bx bx-edit-alt new-chat"></i>
+                    <i className="bx bx-edit-alt new-chat"
+                        onClick={onNewChat}></i>
                 </div>
-                <div className="chat-list-item active">
+
+                {chats.map((chat) => (
+                    <div key={chat.id} 
+                        className={`chat-list-item ${chat.id===activeChat ? 'active': ''}`}
+                        onClick={()=> handleSelectChat(chat.id)}>
+                        <h4>{chat.displayId}</h4>
+                        <i className="bx bx-x-circle"
+                        onClick={(e)=> {
+                            e.stopPropagation();
+                            handleDeleteChat(chat.id);
+                        }}></i>
+                    </div>
+                ))}
+                {/* prototype 
+                    <div className="chat-list-item active">
                     <h4>Chat 20/07/2024 12:59:42 PM</h4>
                     <i className="bx bx-x-circle"></i>
-                </div>
-                <div className="chat-list-item">
-                    <h4>Chat 20/07/2024 12:59:42 PM</h4>
-                    <i className="bx bx-x-circle"></i>
-                </div>
-                <div className="chat-list-item">
-                    <h4>Chat 20/07/2024 12:59:42 PM</h4>
-                    <i className="bx bx-x-circle"></i>
-                </div>
+                </div> */}
             </div>
 
             <div className="chat-window">
                 <div className="chat-title">
                     <h3>Chat with AI</h3>
                     <i className="bx bx-arrow-back arrow"
-                    onClick={onGoBack}></i>
+                        onClick={onGoBack}></i>
                 </div>
                 <div className="chat">
-                    <div className="prompt">Hi, how are you?
+                    {messages.map((message, index)=> 
+                    (
+                        <div key={index} className={message.type==="prompt"?"prompt": "response"}>
+                            {message.text}
+                        <span>{message.timeStamp}</span>
+                        </div>
+                    ))}
+                    {/* prototype.....
+                        <div className="prompt">Hi, how are you?
                         <span>12:59:51 PM</span></div>
+
                     <div className="response">Hello I am an AI ChatBot! I have no feelings, How can I help you today?
-                        <span>12:59:52 PM</span></div>
+                        <span>12:59:52 PM</span></div> */}
+
                     <div className="typing">Typing...</div>
                 </div>
 
-                <form action="" className="msg-form">
+                <form 
+                    // action="" 
+                    className="msg-form"
+                    onSubmit={(e) => e.preventDefault()}>
                     <i className="fa-solid fa-face-smile emoji"></i>
-                    <input type="text" className="msg-input" placeholder='Type a message...' />
-                    <i className="fa-solid fa-paper-plane"></i>
+                    <input 
+                        type="text" 
+                        className="msg-input" 
+                        placeholder='Type a message...' 
+                        value = {inputValue}
+                        onChange = {handleInputChange}
+                        onKeyDown = {handleKeyDown}
+                        />
+                    <i className="fa-solid fa-paper-plane"
+                        onClick={sendMessage}></i>
                 </form>
             </div>
 
